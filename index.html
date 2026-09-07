@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Socios Más - Microfinanzas</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Socios Más</h1>
+      <p>Crecemos juntos de la mano</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span class="badge" id="usuarioBadge">Sin sesión</span>
+      <span class="badge" id="cloudBadge">Nube: conectando…</span>
+      <button id="actualizarNube" class="secondary" style="display:none">Actualizar nube</button>
+      <button id="cerrarSesion" class="secondary" style="display:none">Cerrar sesión</button>
+      
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="dashboard" class="active">Inicio</button>
+    <button data-tab="clientes">Clientes</button>
+    <button data-tab="creditos">Créditos</button>
+    <button data-tab="pagos">Pagos</button>
+    <button data-tab="renovaciones">Renovaciones</button>
+    <button data-tab="gastos" data-permission="gastos">Gastos</button>
+    <button data-tab="reportes" data-permission="reportes">Reportes</button>
+    <button data-tab="configuracion" class="admin-only">Configuración</button>
+  </nav>
+
+  <main>
+    <section id="dashboard" class="tab active">
+      <div class="cards">
+        <article><span>Capital disponible</span><strong id="kpiCapital">$0</strong></article>
+        <article><span>Capital colocado</span><strong id="kpiColocado">$0</strong></article>
+        <article><span>Capital recuperado</span><strong id="kpiRecuperado">$0</strong></article>
+        <article><span>Utilidad recuperada</span><strong id="kpiUtilidad">$0</strong></article>
+        <article><span>Recuperación pendiente</span><strong id="kpiPendiente">$0</strong></article>
+        <article><span>Renovaciones disponibles</span><strong id="kpiRenovaciones">0</strong></article>
+      </div>
+      <div class="panel">
+        <h2>Resumen de cartera</h2>
+        <div id="resumenCartera"></div>
+        <p class="hint" id="ultimaSync"></p>
+      </div>
+    </section>
+
+    <section id="clientes" class="tab">
+      <div class="grid2">
+        <form id="formCliente" class="panel">
+          <h2>Nuevo cliente</h2>
+          <label>Nombre completo<input name="nombre" required></label>
+          <label>Teléfono<input name="telefono"></label>
+          <label>Dirección<input name="direccion"></label>
+          <label>CURP<input name="curp"></label>
+          <label>Aval<input name="aval"></label>
+          <label>Teléfono aval<input name="telefonoAval"></label>
+          <button type="submit">Guardar cliente</button>
+        </form>
+        <div class="panel">
+          <h2>Clientes</h2>
+          <div id="listaClientes"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="creditos" class="tab">
+      <div class="grid2">
+        <form id="formCredito" class="panel" data-permission="creditos">
+          <h2>Nuevo crédito</h2>
+          <label>Cliente<select name="clienteId" id="creditoCliente" required></select></label>
+          <label>Monto aprobado<input name="monto" type="number" min="1" step="0.01" required></label>
+          <label>Pagos<input name="numeroPagos" type="number" min="1" value="29" required></label>
+          <label>Valor por cada $1,000<input name="valorPorMil" type="number" min="1" value="60" required></label>
+          <label>Fecha de apertura<input name="fecha" type="date" required></label>
+          <label>Método capital/utilidad
+            <select name="metodo">
+              <option value="capitalPrimero">Capital primero</option>
+              <option value="proporcional">Proporcional</option>
+            </select>
+          </label>
+          <button type="submit">Crear crédito</button>
+        </form>
+        <div class="panel">
+          <h2>Créditos activos</h2>
+          <div id="listaCreditos"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pagos" class="tab">
+      <div class="grid2">
+        <form id="formPago" class="panel">
+          <h2>Registrar pago</h2>
+          <label>Crédito<select name="creditoId" id="pagoCredito" required></select></label>
+          <label>Monto recibido<input name="monto" type="number" min="0.01" step="0.01" required></label>
+          <label>Fecha<input name="fecha" type="date" required></label>
+          <label>Método
+            <select name="metodoPago">
+              <option>Efectivo</option>
+              <option>Transferencia</option>
+              <option>Depósito</option>
+              <option>Otro</option>
+            </select>
+          </label>
+          <button type="submit">Registrar pago</button>
+        </form>
+        <div class="panel">
+          <h2>Historial de pagos</h2>
+          <div id="listaPagos"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="renovaciones" class="tab">
+      <div class="panel">
+        <h2>Renovaciones</h2>
+        <p class="hint">Regla: disponibles a partir del pago 18.</p>
+        <div id="listaRenovaciones"></div>
+      </div>
+    </section>
+
+    <section id="gastos" class="tab">
+      <div class="grid2">
+        <form id="formGasto" class="panel" data-permission="gastos">
+          <h2>Registrar gasto</h2>
+          <label>Fecha<input name="fecha" type="date" required></label>
+          <label>Responsable<input name="responsable" required></label>
+          <label>Tipo
+            <select name="tipo">
+              <option>Administrativo</option>
+              <option>Operativo</option>
+            </select>
+          </label>
+          <label>Concepto<input name="concepto" required></label>
+          <label>Importe<input name="importe" type="number" min="0.01" step="0.01" required></label>
+          <button type="submit">Guardar gasto</button>
+        </form>
+        <div class="panel">
+          <h2>Gastos registrados</h2>
+          <div id="listaGastos"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reportes" class="tab">
+      <div class="panel">
+        <h2>Reporte consolidado</h2>
+        <button id="exportarCsv">Exportar movimientos CSV</button>
+        <pre id="reporteTexto"></pre>
+        <h3>Auditoría de movimientos</h3>
+        <div id="listaAuditoria"></div>
+      </div>
+    </section>
+
+    <section id="configuracion" class="tab">
+      <div class="grid2">
+        <div class="panel">
+          <h2>Respaldo y restauración</h2>
+          <p class="hint">Descarga un respaldo completo antes de cambiar de teléfono o borrar datos.</p>
+          <button id="exportarBackup">Descargar respaldo JSON</button>
+          
+        </div>
+        <form id="formCambiarPin" class="panel">
+          <h2>Cambiar mi PIN</h2>
+          <label>PIN actual
+            <input name="pinActual" type="password" inputmode="numeric" minlength="4" maxlength="8" required>
+          </label>
+          <label>Nuevo PIN
+            <input name="nuevoPin" type="password" inputmode="numeric" minlength="4" maxlength="8" required>
+          </label>
+          <button type="submit">Actualizar PIN</button>
+        </form>
+      </div>
+      <div class="panel">
+        <h2>Usuarios y roles</h2>
+        <div id="listaUsuarios"></div>
+      </div>
+    </section>
+
+  </main>
+
+
+
+  <dialog id="dialogBootstrap">
+    <form method="dialog" id="formBootstrap">
+      <h2>Activación inicial</h2>
+      <p class="hint">Crea un PIN de 4 a 8 dígitos para cada usuario. Este paso solo aparece una vez.</p>
+      <div id="bootstrapUsers"></div>
+      <div class="dialog-actions">
+        <button value="default" id="confirmarBootstrap">Activar usuarios</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dialogLogin">
+    <form method="dialog" id="formLogin">
+      <h2>Iniciar sesión</h2>
+      <label>Usuario
+        <select name="usuarioId" id="loginUsuario" required></select>
+      </label>
+      <label>PIN
+        <input name="pin" type="password" inputmode="numeric" maxlength="8" required>
+      </label>
+      <p class="hint">Acceso protegido en la nube.</p>
+      <div class="dialog-actions">
+        <button value="default" id="confirmarLogin">Entrar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dialogRenovar">
+    <form method="dialog" id="formRenovar">
+      <h2>Renovar crédito</h2>
+      <input type="hidden" name="creditoId">
+      <label>Nuevo monto<input name="nuevoMonto" type="number" min="1" required></label>
+      <label>Valor por cada $1,000<input name="nuevoValorPorMil" type="number" value="60" min="1" required></label>
+      <label>Primer pago nuevo<input name="primerPago" type="number" min="0" value="0"></label>
+      <label>Modalidad
+        <select name="modalidad">
+          <option value="cobrar">Cobrar pago del día y renovar</option>
+          <option value="sinCobrar">Renovar sin cobrar pago del día</option>
+          <option value="aplicarSaldo">Aplicar saldo pendiente al nuevo crédito</option>
+        </select>
+      </label>
+      <div class="dialog-actions">
+        <button value="cancel" class="secondary">Cancelar</button>
+        <button value="default" id="confirmarRenovacion">Confirmar renovación</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=6").catch(()=>{}));
+    }
+  </script>
+</body>
+</html>

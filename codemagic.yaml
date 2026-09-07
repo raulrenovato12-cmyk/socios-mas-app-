@@ -1,0 +1,24 @@
+workflows:
+  android-debug-apk:
+    name: Socios Mas Android APK
+    max_build_duration: 30
+    environment:
+      java: 17
+    scripts:
+      - name: Preparar Gradle 8.7
+        script: |
+          set -e
+          cd /tmp
+          curl -L --retry 3 -o gradle-8.7-bin.zip https://services.gradle.org/distributions/gradle-8.7-bin.zip
+          unzip -q -o gradle-8.7-bin.zip
+          /tmp/gradle-8.7/bin/gradle --version
+      - name: Compilar APK debug
+        script: |
+          set -e
+          /tmp/gradle-8.7/bin/gradle -p android clean assembleDebug --stacktrace
+      - name: Verificar APK
+        script: |
+          set -e
+          ls -lh android/app/build/outputs/apk/debug/
+    artifacts:
+      - android/app/build/outputs/apk/debug/*.apk
